@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple CRUD with jQuery</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery for DOM manipulation and event handling -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles can be added here if needed */
+    
+        @import url('https://fonts.googleapis.com/css2?family=Bayon&family=Koulen&display=swap');
+
+        body {
+            font-family: "Koulen", sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-700">តារាងគ្រប់គ្រងអ្នកប្រើប្រាស់</h1>
+
+        <!-- Add User Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8 max-w-2xl mx-auto">
+            <h2 class="text-2xl font-semibold mb-4">បញ្ចូលព័ត៏មានអ្នកប្រើប្រាស់</h2>
+            <form id="addUserForm" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">ឈ្មោះ</label>
+                    <input type="text" id="name" placeholder="បញ្ចូលឈ្មោះពេញ" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700">អុីម៉ែល</label>
+                    <input type="email" id="email" placeholder="បញ្ចូលអុីម៉ែល" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">បន្ថែម</button>
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+            <h2 class="text-2xl font-semibold mb-4">បញ្ជីឈ្មោះអ្នកប្រើប្រាស់</h2>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ឈ្មោះ</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">អុីម៉ែល</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Sample Row (for demonstration) -->
+                    <tr data-id="1">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">សោ​វិសាល​​</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500"​ style="font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; color: #000;">john.doe@example.com</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="edit-btn text-indigo-600 hover:text-indigo-900 mr-3">កែប្រែ</button>
+                            <button class="delete-btn text-red-600 hover:text-red-900">លុប</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop"></div>
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg mx-auto relative">
+                <h2 class="text-2xl font-semibold mb-4">កែប្រែទិន្នន័យ</h2>
+                <form id="editUserForm" class="space-y-4">
+                    <input type="hidden" id="editUserId">
+                    <div>
+                        <label for="editName" class="block text-sm font-medium text-gray-700">ឈ្មោះ</label>
+                        <input type="text" id="editName" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div>
+                        <label for="editEmail" class="block text-sm font-medium text-gray-700">អុីម៉ែល</label>
+                        <input type="email" id="editEmail" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancelEdit" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition duration-150 ease-in-out">បោះបង់</button>
+                        <button type="submit" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">រក្សាទុក ផ្លាស់ប្តូរ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script>
+$(document).ready(function() {
+    let userIdCounter = 2; // Start counter after the sample user
+
+    // --- CREATE: Add a new user ---
+    $('#addUserForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        // Get values from the form
+        const name = $('#name').val().trim();
+        const email = $('#email').val().trim();
+
+        // Simple validation
+        if (name === '' || email === '') {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        // Create the new table row
+        const newRow = `
+            <tr data-id="${userIdCounter}">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">${name}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-500">${email}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button class="edit-btn text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                    <button class="delete-btn text-red-600 hover:text-red-900">Delete</button>
+                </td>
+            </tr>
+        `;
+
+        // Append the new row to the table body
+        $('#userTableBody').append(newRow);
+        userIdCounter++; // Increment the unique ID for the next user
+
+        // Clear the form fields
+        $('#addUserForm')[0].reset();
+    });
+
+    // --- UPDATE: Show Edit Modal ---
+    // Use event delegation for dynamically added elements
+    $('#userTableBody').on('click', '.edit-btn', function() {
+        // Find the parent row
+        const row = $(this).closest('tr');
+        
+        // Get user data from the row
+        const id = row.data('id');                       
+        const name = row.find('td:eq(0)').text().trim();
+        const email = row.find('td:eq(1)').text().trim();
+
+        // Populate the modal form
+        $('#editUserId').val(id);                                                                           
+        $('#editName').val(name);
+        $('#editEmail').val(email); 
+
+        // Show the modal
+        $('#editModal').removeClass('hidden');
+    });
+
+    // --- UPDATE: Handle form submission in the modal ---
+    $('#editUserForm').on('submit', function(e) {
+        e.preventDefault();
+
+        // Get updated values
+        const id = $('#editUserId').val();
+        const name = $('#editName').val().trim();
+        const email = $('#editEmail').val().trim();
+
+        if (name === '' || email === '') {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        // Find the corresponding row in the table and update its content
+        const rowToUpdate = $(`#userTableBody tr[data-id="${id}"]`);
+        rowToUpdate.find('td:eq(0)').html(`<div class="text-sm font-medium text-gray-900">${name}</div>`);
+        rowToUpdate.find('td:eq(1)').html(`<div class="text-sm text-gray-500">${email}</div>`);
+
+
+        // Hide the modal
+        $('#editModal').addClass('hidden');
+    });
+
+    // --- UPDATE: Cancel edit ---
+    $('#cancelEdit').on('click', function() {
+        $('#editModal').addClass('hidden');
+    });
+
+    // --- DELETE: Remove a user ---
+    // Use event delegation for dynamically added elements
+    $('#userTableBody').on('click', '.delete-btn', function() {
+        // Find the parent row and remove it
+        // A confirmation dialog is good practice here
+        if (confirm('តើ​អ្នក​ប្រាកដ​ជា​ចង់​លុប​អ្នក​ប្រើ​នេះ?')) {
+            $(this).closest('tr').remove();
+        }
+    });
+});
+</script>
+
+</body>
+</html>
